@@ -4,7 +4,7 @@
   "description": "Manage your REMnux installation",
   "main": "remnux-cli.js",
   "bin": {
-    "remnux-cli": "remnuxt-cli.js"
+    "remnux-cli": "remnux-cli.js"
   },
   "scripts": {
     "pkg:prep": "jo version=$(bash .ci/version) > config.json",

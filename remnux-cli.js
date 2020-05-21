@@ -344,9 +344,9 @@ const downloadReleaseFile = (version, filename) => {
 }
 
 const downloadRelease = (version) => {
-  console.log(`>> downloading salt-states-${version}.tar.gz`)
+  console.log(`>> downloading remnux-salt-states-${version}.tar.gz`)
 
-  const filepath = `${cachePath}/${version}/salt-states-${version}.tar.gz`
+  const filepath = `${cachePath}/${version}/remnux-salt-states-${version}.tar.gz`
 
   if (fs.existsSync(filepath) && cli['--no-cache'] === false) {
     return new Promise((resolve, reject) => { resolve() })
@@ -449,13 +449,13 @@ const downloadUpdate = async (version) => {
   console.log(`> downloading ${version}`)
 
   await mkdirp(`${cachePath}/${version}`)
-  await downloadReleaseFile(version, `salt-states-${version}.tar.gz.asc`)
-  await downloadReleaseFile(version, `salt-states-${version}.tar.gz.sha256`)
-  await downloadReleaseFile(version, `salt-states-${version}.tar.gz.sha256.asc`)
+  await downloadReleaseFile(version, `remnux-salt-states-${version}.tar.gz.asc`)
+  await downloadReleaseFile(version, `remnux-salt-states-${version}.tar.gz.sha256`)
+  await downloadReleaseFile(version, `remnux-salt-states-${version}.tar.gz.sha256.asc`)
   await downloadRelease(version)
-  await validateFile(version, `salt-states-${version}.tar.gz`)
-  await validateSignature(version, `salt-states-${version}.tar.gz.sha256`)
-  await extractUpdate(version, `salt-states-${version}.tar.gz`)
+  await validateFile(version, `remnux-salt-states-${version}.tar.gz`)
+  await validateSignature(version, `remnux-salt-states-${version}.tar.gz.sha256`)
+  await extractUpdate(version, `remnux-salt-states-${version}.tar.gz`)
 }
 
 const performUpdate = (version) => {

@@ -16,7 +16,7 @@
   "author": "Erik Kristensen <erik@erikkristensen.com>. Revised for REMnux by Lenny Zeltser.",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "3.7.2",
+    "bluebird": "^3.7.2",
     "docopt": "0.6.2",
     "github": "13.1.1",
     "js-yaml": "3.13.1",

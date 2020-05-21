@@ -64,7 +64,7 @@ remnux install --mode=addon
 ### Install Specific Version
 
 ```bash
-remnux install v2019.11.0
+remnux install v2020.21.0
 ```
 
 ### Update Existing VM

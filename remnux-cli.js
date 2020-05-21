@@ -156,12 +156,6 @@ const validOS = async () => {
   try {
     const contents = fs.readFileSync('/etc/os-release', 'utf8')
 
-    if (contents.indexOf('UBUNTU_CODENAME=xenial') !== -1) {
-      osVersion = '16.04'
-      osCodename = 'xenial'
-      return true
-    }
-
     if (contents.indexOf('UBUNTU_CODENAME=bionic') !== -1) {
       osVersion = '18.04'
       osCodename = 'bionic'
@@ -179,7 +173,7 @@ const validOS = async () => {
 }
 
 const checkOptions = () => {
-  const validModes = ['desktop', 'server', 'complete', 'packages-only']
+  const validModes = ['dedicated', 'addon']
 
   if (validModes.indexOf(cli['--mode']) === -1) {
     throw new Error(`${cli['--mode']} is not a valid install mode. Valid Modes: ${validModes.join(', ')}`)

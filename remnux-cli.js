@@ -36,7 +36,6 @@ Usage:
   remnux [options] install [--pre-release] [--version=<version>] [--mode=<mode>] [--user=<user>]
   remnux [options] update
   remnux [options] upgrade [--pre-release] [--mode=<mode>] [--user=<user>]
-  remnux [options] self-upgrade [--pre-release]
   remnux [options] version
   remnux [options] debug
   remnux -h | --help | -v
@@ -108,16 +107,14 @@ fSjkH+LA6A==
 
 const help = `
 
------ PLEASE READ ----------------------
+To determine the nature of the issue, please review the
+saltstack.log file under /var/cache/remnux/cli in the
+subdirectory that matches the REMnux version you're installing.
+Pay particular attention to lines that start with [ERROR].
 
-A lot of failures are caused by the apt system being locked
-or unhealthy. 
-
-Before opening an issue in GitHub, please check to see if 
-your apt system is healthy.
-
-Try running 'apt-get update' then remove any packages that 
-aren't used by running 'apt-get autoremove'
+Sometimes problems occur due to network or server issues when
+downloading packages, in which case retrying your operation
+a bit later might lead to good results.
 `
 
 let osVersion = null
@@ -162,7 +159,7 @@ const validOS = async () => {
       return true
     }
 
-    throw new Error('invalid OS, unable to determine ubuntu version')
+    throw new Error('Invalid OS or unable to determine Ubuntu version')
   } catch (err) {
     if (err && err.code === 'ENOENT') {
       throw new Error('invalid OS, missing /etc/os-release')
@@ -176,7 +173,7 @@ const checkOptions = () => {
   const validModes = ['dedicated', 'addon']
 
   if (validModes.indexOf(cli['--mode']) === -1) {
-    throw new Error(`${cli['--mode']} is not a valid install mode. Valid Modes: ${validModes.join(', ')}`)
+    throw new Error(`${cli['--mode']} is not a valid install mode. Valid modes are: ${validModes.join(', ')}`)
   }
 }
 
@@ -308,7 +305,7 @@ const isValidRelease = (version) => {
 const validateVersion = (version) => {
   return getValidReleases().then((releases) => {
     if (typeof releases.indexOf(version) === -1) {
-      throw new Error('The version you are wanting to install/upgrade to is not valid')
+      throw new Error('The version you are wanting to install/upgrade to is not valid.')
     }
     return new Promise((resolve) => { resolve() })
   })
@@ -386,7 +383,7 @@ const validateFile = async (version, filename) => {
   })
 
   if (expected.toString() !== actual) {
-    throw new Error(`Hashes for ${filename} do not match. Expected: ${expected}, Actual: ${actual}`)
+    throw new Error(`Hashes for ${filename} do not match. Expected: ${expected}. Actual: ${actual}.`)
   }
 }
 
@@ -565,7 +562,7 @@ const summarizeResults = async (version) => {
     console.log(`\n\n>> Incomplete due to Failures -- Success: ${success}, Failure: ${failure}`)
     console.log(`\n>>>> List of Failures (first 10 only)`)
     console.log(`\n     NOTE: First failure is generally the root cause.`)
-    console.log(`\n     IMPORTANT: If opening a ticket, please include this information.\n`)
+    console.log(`\n     IMPORTANT: If seeking assistance, include this information.\n`)
     failures.sort((a, b) => {
       return a['__run_num__'] - b['__run_num__']
     }).slice(0, 10).forEach((key) => {
@@ -578,7 +575,7 @@ const summarizeResults = async (version) => {
     return new Promise((resolve, reject) => { return resolve() })
   }
 
-  console.log(`\n\n>> COMPLETED SUCCESSFULLY -- Success: ${success}, Failure: ${failure}`)
+  console.log(`\n\n>> COMPLETED SUCCESSFULLY! Success: ${success}, Failure: ${failure}`)
 }
 
 const saveConfiguration = (version) => {
@@ -649,16 +646,6 @@ ${yaml.safeDump(config)}
   const version = await getCurrentVersion()
   console.log(`> remnux-version: ${version}\n`)
 
-  if (version !== 'notinstalled') {
-    if (semver.lt(semver.coerce(version, { loose: true }), '2019.11.0') === true) {
-      if (cli['--mode'] === 'desktop') {
-        cli['--mode'] = 'complete'
-      } else if (cli['--mode'] === 'server') {
-        cli['--mode'] = 'packages-only'
-      }
-    }
-  }
-
   console.log(`> mode: ${cli['--mode']}`)
 
   if (cli['version'] === true) {
@@ -669,7 +656,7 @@ ${yaml.safeDump(config)}
     const releases = await getValidReleases()
     const current = await getCurrentVersion()
     if (releases.length === 0 || releases[0] === current) {
-      console.log('No upgrades available')
+      console.log('No upgrades available.')
       return process.exit(0)
     }
 
@@ -718,7 +705,7 @@ ${yaml.safeDump(config)}
     }
 
     if (versionToInstall === null) {
-      throw new Error('versionToInstall was null, this should never happen, a bug was reported')
+      throw new Error('versionToInstall was null, this should never happen.')
     }
 
     await validateVersion(versionToInstall)

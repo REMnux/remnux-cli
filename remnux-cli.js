@@ -43,7 +43,7 @@ Usage:
 Options:
   --dev                 Developer Mode (do not use, dangerous, bypasses checks)
   --version=<version>   Specific version install [default: latest]
-  --mode=<mode>         REMnux installation mode (dedicated or addon) [default: addon]
+  --mode=<mode>         REMnux installation mode (dedicated or addon) [default: dedicated]
   --user=<user>         User used for REMnux configuration [default: ${currentUser}]
   --no-cache            Ignore the cache, always download the release files
   --verbose             Display verbose logging
@@ -464,8 +464,8 @@ const performUpdate = (version) => {
   const endRegex = /Completed state \[(.*)\] at time (.*) duration_in_ms=(.*)/g
 
   const stateApplyMap = {
-    'addon': 'remnux.addon',
-    'dedicated': 'remnux.dedicated'
+    'dedicated': 'remnux.dedicated',
+    'addon': 'remnux.addon'
   }
 
   return new Promise((resolve, reject) => {

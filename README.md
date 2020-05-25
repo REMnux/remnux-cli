@@ -2,7 +2,7 @@
 
 Manage Your REMnux Distro Installation
 
-*This tool is still a work in progress. Don't expect it to work yet.*
+*This tool is still a work in progress. *
 
 ## Usage
 
@@ -12,7 +12,6 @@ Usage:
   remnux [options] install [--pre-release] [--version=<version>] [--mode=<mode>] [--user=<user>]
   remnux [options] update [--mode=<mode>]
   remnux [options] upgrade [--pre-release] [--mode=<mode>]
-  remnux [options] self-upgrade [--pre-release]
   remnux [options] version
   remnux [options] debug
   remnux -h | --help | -v
@@ -20,7 +19,7 @@ Usage:
 Options:
   --dev                 Developer Mode (do not use, dangerous, bypasses checks)
   --version=<version>   Specific version install [default: latest]
-  --mode=<mode>         REMnux Install Mode (dedicated or addon) [default: addon]
+  --mode=<mode>         REMnux Install Mode (dedicated or addon) [default: dedicated]
   --user=<user>         User used for REMnux configuration [default: ${currentUser}]
   --no-cache            Ignore the cache, always download the release files
   --verbose             Display verbose logging
@@ -50,7 +49,7 @@ Open issues over at the [REMnux distro repository](https://github.com/REMnux/dis
 ### Install the Latest REMnux Distro on a Dedicated System
 
 ```bash
-remnux install --mode=dedicated
+remnux install
 ```
 
 ### Install Latest REMnux Distro in Addon Mode
@@ -67,16 +66,23 @@ remnux install --mode=addon
 remnux install v2020.21.0
 ```
 
+### Upgrading to the Latest Version
+
+Run this command periodically to make sure you have the latest version of REMnux. This updates all the state files and the underlying packages:
+
+```bash
+remnux upgrade
+```
+
+If you installed REMnux on top of an existing system and don't want to replace your look-and-feel, supply the `--mode=addon` to the command above. Otherwise, it'll assume you specified `--mode=dedicated`, which is the default.
+
 ### Update Existing VM
 
-This just makes sure the current version is up-to-date
+Don't upgrade to the next version of state files, but refresh the current version of the packages. You probably won't need to do this, but for the sake of completeness:
 
 ```bash
 remnux update
 ```
 
-### Upgrading to a New REMnux Release
+If you installed REMnux on top of an existing system and don't want to replace your look-and-feel, supply the `--mode=addon` to the command above. Otherwise, it'll assume you specified `--mode=dedicated`, which is the default.
 
-```bash
-remnux upgrade
-```

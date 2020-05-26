@@ -51,6 +51,7 @@ Open issues over at the [REMnux distro repository](https://github.com/REMnux/dis
 ```bash
 sudo remnux install
 ```
+Wait while the packages install. This could take an hour or so, depending on the speed of your system and internet bandwith. Reboot when done.
 
 ### Install Latest REMnux Distro in Addon Mode
 
@@ -59,6 +60,8 @@ Addon mode only installs tools and packages, it does not do any modifications th
 ```bash
 sudo remnux install --mode=addon
 ```
+
+Wait while the packages install. This could take an hour or so, depending on the speed of your system and internet bandwith. Reboot when done.
 
 ### Install Specific Version
 

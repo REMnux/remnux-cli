@@ -49,7 +49,7 @@ Open issues over at the [REMnux distro repository](https://github.com/REMnux/dis
 ### Install the Latest REMnux Distro on a Dedicated System
 
 ```bash
-remnux install
+sudo remnux install
 ```
 
 ### Install Latest REMnux Distro in Addon Mode
@@ -57,13 +57,13 @@ remnux install
 Addon mode only installs tools and packages, it does not do any modifications that would normally appear on the desktop.
 
 ```bash
-remnux install --mode=addon
+sudo remnux install --mode=addon
 ```
 
 ### Install Specific Version
 
 ```bash
-remnux install v2020.21.0
+sudo remnux install v2020.21.0
 ```
 
 ### Upgrading to the Latest Version
@@ -81,7 +81,7 @@ If you installed REMnux on top of an existing system and don't want to replace y
 Don't upgrade to the next version of state files, but refresh the current version of the packages. You probably won't need to do this, but for the sake of completeness:
 
 ```bash
-remnux update
+sudo remnux update
 ```
 
 If you installed REMnux on top of an existing system and don't want to replace your look-and-feel, supply the `--mode=addon` to the command above. Otherwise, it'll assume you specified `--mode=dedicated`, which is the default.

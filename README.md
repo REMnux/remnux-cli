@@ -2,8 +2,6 @@
 
 Manage Your REMnux Distro Installation
 
-*This tool is still a work in progress. *
-
 ## Usage
 
 ```
@@ -61,7 +59,7 @@ Addon mode only installs tools and packages, it does not do any modifications th
 sudo remnux install --mode=addon
 ```
 
-Wait while the packages install. This could take an hour or so, depending on the speed of your system and internet bandwith. Reboot when done.
+Wait while the packages install. This could take an hour or so, depending on the speed of your system and internet bandwidth. Reboot when done.
 
 ### Install Specific Version
 

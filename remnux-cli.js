@@ -14,6 +14,7 @@ const username = require('username')
 const readline = require('readline')
 const split = require('split')
 const semver = require('semver')
+const prompt = require('prompt-sync')({sigint: true})
 
 /**
  * Setup Custom YAML Parsing
@@ -43,7 +44,7 @@ Usage:
 Options:
   --dev                 Developer Mode (do not use, dangerous, bypasses checks)
   --version=<version>   Specific version install [default: latest]
-  --mode=<mode>         REMnux installation mode (dedicated or addon) [default: dedicated]
+  --mode=<mode>         REMnux installation mode (dedicated or addon)
   --user=<user>         User used for REMnux configuration [default: ${currentUser}]
   --no-cache            Ignore the cache, always download the release files
   --verbose             Display verbose logging
@@ -123,6 +124,8 @@ let cachePath = '/var/cache/remnux/cli'
 let versionFile = '/etc/remnux-version'
 let configFile = '/etc/remnux-config'
 let remnuxConfiguration = {}
+let isModeSpecified = false
+const validModes = ['dedicated', 'addon']
 
 const cli = docopt(doc)
 
@@ -170,10 +173,13 @@ const validOS = async () => {
 }
 
 const checkOptions = () => {
-  const validModes = ['dedicated', 'addon']
-
-  if (validModes.indexOf(cli['--mode']) === -1) {
-    throw new Error(`${cli['--mode']} is not a valid install mode. Valid modes are: ${validModes.join(', ')}`)
+  if (cli['--mode'] != null) {
+    if (validModes.indexOf(cli['--mode']) === -1) {
+      throw new Error(`${cli['--mode']} is not a valid install mode. Valid modes are: ${validModes.join(', ')}`)
+    }
+    else {
+      isModeSpecified = true
+    }
   }
 }
 
@@ -468,6 +474,26 @@ const performUpdate = (version) => {
     'addon': 'remnux.addon'
   }
 
+  if (!isModeSpecified) {
+    let savedMode = remnuxConfiguration['mode']
+      if (validModes.indexOf(savedMode) != -1) {
+        cli['--mode'] = savedMode
+        console.log(`> Use previous saved mode: ${cli['--mode']}`)
+      }
+      else {
+        let correctChoice = false
+        while (!correctChoice) {
+          let choice = prompt('No previous valid mode found. Please enter 0 (dedicated mode) or 1 (addon mode) : ')
+          choice = Number(choice)
+          cli['--mode'] = validModes[choice]
+          if (choice === 0 || choice === 1) {
+            correctChoice = true
+          }
+        }
+        console.log(`> User selected mode: ${cli['--mode']}`)
+      }
+  }
+
   return new Promise((resolve, reject) => {
     console.log(`> performing update ${version}`)
 
@@ -595,7 +621,7 @@ const loadConfiguration = async () => {
   } catch (err) {
     if (err.code === 'ENOENT') {
       return {
-        mode: cli['--mode'],
+        mode: 'unknown',
         user: cli['--user']
       }
     }
@@ -647,7 +673,9 @@ ${yaml.safeDump(config)}
   const version = await getCurrentVersion()
   console.log(`> remnux-version: ${version}\n`)
 
-  console.log(`> mode: ${cli['--mode']}`)
+  if (isModeSpecified) {
+    console.log(`> mode: ${cli['--mode']}`)
+  }
 
   if (cli['version'] === true) {
     return process.exit(0)

@@ -14,7 +14,6 @@ const username = require('username')
 const readline = require('readline')
 const split = require('split')
 const semver = require('semver')
-const prompt = require('prompt-sync')({sigint: true})
 
 /**
  * Setup Custom YAML Parsing
@@ -124,8 +123,9 @@ let cachePath = '/var/cache/remnux/cli'
 let versionFile = '/etc/remnux-version'
 let configFile = '/etc/remnux-config'
 let remnuxConfiguration = {}
-let isModeSpecified = false
+
 const validModes = ['dedicated', 'addon']
+let isModeSpecified = false
 
 const cli = docopt(doc)
 
@@ -178,7 +178,7 @@ const checkOptions = () => {
       throw new Error(`${cli['--mode']} is not a valid install mode. Valid modes are: ${validModes.join(', ')}`)
     }
     else {
-      isModeSpecified = true
+      isModeSpecified = true	  
     }
   }
 }
@@ -473,25 +473,16 @@ const performUpdate = (version) => {
     'dedicated': 'remnux.dedicated',
     'addon': 'remnux.addon'
   }
-
+ 
   if (!isModeSpecified) {
     let savedMode = remnuxConfiguration['mode']
-      if (validModes.indexOf(savedMode) != -1) {
-        cli['--mode'] = savedMode
-        console.log(`> Use previous saved mode: ${cli['--mode']}`)
-      }
-      else {
-        let correctChoice = false
-        while (!correctChoice) {
-          let choice = prompt('No previous valid mode found. Please enter 0 (dedicated mode) or 1 (addon mode) : ')
-          choice = Number(choice)
-          cli['--mode'] = validModes[choice]
-          if (choice === 0 || choice === 1) {
-            correctChoice = true
-          }
-        }
-        console.log(`> User selected mode: ${cli['--mode']}`)
-      }
+    if (validModes.indexOf(savedMode) != -1) {
+      cli['--mode'] = savedMode
+	    console.log(`> using previous mode: ${cli['--mode']}`)
+    }  else {
+      console.log(`>>> No previous valid mode found. Corrupt ${versionFile}?`)
+      return process.exit(0)
+    }
   }
 
   return new Promise((resolve, reject) => {
@@ -500,7 +491,7 @@ const performUpdate = (version) => {
     console.log(`>> Log file: ${logFilepath}`)
 
     if (os.platform() !== 'linux') {
-      console.log(`>>> Platform is not linux`)
+      console.log(`>>> Platform is not Linux`)
       return process.exit(0)
     }
 
@@ -715,7 +706,7 @@ ${yaml.safeDump(config)}
     const currentVersion = await getCurrentVersion(versionFile)
 
     if (currentVersion !== 'notinstalled') {
-      console.log('REMnux is already installed, please use the update or upgrade command.')
+      console.log('REMnux is already installed, please use the \"update\" or \"upgrade\" command.')
       return process.exit(0)
     }
 
@@ -753,7 +744,7 @@ ${yaml.safeDump(config)}
       process.exit(0)
     }
 
-    await downloadUpdate(release)
+    //await downloadUpdate(release)
     await performUpdate(release)
     await summarizeResults(release)
   }

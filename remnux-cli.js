@@ -43,7 +43,7 @@ Usage:
 Options:
   --dev                 Developer Mode (do not use, dangerous, bypasses checks)
   --version=<version>   Specific version install [default: latest]
-  --mode=<mode>         REMnux installation mode (dedicated or addon) [default: dedicated]
+  --mode=<mode>         REMnux installation mode (dedicated or addon)
   --user=<user>         User used for REMnux configuration [default: ${currentUser}]
   --no-cache            Ignore the cache, always download the release files
   --verbose             Display verbose logging
@@ -124,6 +124,9 @@ let versionFile = '/etc/remnux-version'
 let configFile = '/etc/remnux-config'
 let remnuxConfiguration = {}
 
+const validModes = ['dedicated', 'addon']
+let isModeSpecified = false
+
 const cli = docopt(doc)
 
 const github = new GitHubApi({
@@ -170,10 +173,13 @@ const validOS = async () => {
 }
 
 const checkOptions = () => {
-  const validModes = ['dedicated', 'addon']
-
-  if (validModes.indexOf(cli['--mode']) === -1) {
-    throw new Error(`${cli['--mode']} is not a valid install mode. Valid modes are: ${validModes.join(', ')}`)
+  if (cli['--mode'] != null) {
+    if (validModes.indexOf(cli['--mode']) === -1) {
+      throw new Error(`${cli['--mode']} is not a valid install mode. Valid modes are: ${validModes.join(', ')}`)
+    }
+    else {
+      isModeSpecified = true	  
+    }
   }
 }
 
@@ -226,13 +232,13 @@ const setupSalt = async () => {
       console.log('NOTICE: Fixing incorrect Saltstack version configuration.')
       console.log('Installing and configuring Saltstack properly ...')
       await child_process.execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
-      await fs.writeFileAsync(aptSourceList, `deb http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
+      await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
       await child_process.execAsync(`wget -O - https://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -y --allow-change-held-packages salt-minion')
     } else if (aptExists === false || saltExists === false) {
       console.log('Installing and configuring SaltStack properly ...')
-      await fs.writeFileAsync(aptSourceList, `deb http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
+      await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
       await child_process.execAsync(`wget -O - https://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -y --allow-change-held-packages salt-minion')
@@ -467,14 +473,25 @@ const performUpdate = (version) => {
     'dedicated': 'remnux.dedicated',
     'addon': 'remnux.addon'
   }
+ 
+  if (!isModeSpecified) {
+    let savedMode = remnuxConfiguration['mode']
+    if (validModes.indexOf(savedMode) != -1) {
+      cli['--mode'] = savedMode
+	    console.log(`> using previous mode: ${cli['--mode']}`)
+    }  else {
+      console.log(`>>> No previous valid mode found. Corrupt ${versionFile}?`)
+      return process.exit(0)
+    }
+  }
 
   return new Promise((resolve, reject) => {
-    console.log(`> performing update ${version}`)
+    console.log(`> upgrading to ${version}`)
 
     console.log(`>> Log file: ${logFilepath}`)
 
     if (os.platform() !== 'linux') {
-      console.log(`>>> Platform is not linux`)
+      console.log(`>>> Platform is not Linux`)
       return process.exit(0)
     }
 
@@ -576,6 +593,7 @@ const summarizeResults = async (version) => {
   }
 
   console.log(`\n\n>> COMPLETED SUCCESSFULLY! Success: ${success}, Failure: ${failure}`)
+  console.log(`\n\n>> Please reboot to make sure all settings go into effect.`)
 }
 
 const saveConfiguration = (version) => {
@@ -594,7 +612,7 @@ const loadConfiguration = async () => {
   } catch (err) {
     if (err.code === 'ENOENT') {
       return {
-        mode: cli['--mode'],
+        mode: 'unknown',
         user: cli['--user']
       }
     }
@@ -646,7 +664,9 @@ ${yaml.safeDump(config)}
   const version = await getCurrentVersion()
   console.log(`> remnux-version: ${version}\n`)
 
-  console.log(`> mode: ${cli['--mode']}`)
+  if (isModeSpecified) {
+    console.log(`> mode: ${cli['--mode']}`)
+  }
 
   if (cli['version'] === true) {
     return process.exit(0)
@@ -686,7 +706,7 @@ ${yaml.safeDump(config)}
     const currentVersion = await getCurrentVersion(versionFile)
 
     if (currentVersion !== 'notinstalled') {
-      console.log('REMnux is already installed, please use the update or upgrade command.')
+      console.log('REMnux is already installed, please use the \"update\" or \"upgrade\" command.')
       return process.exit(0)
     }
 

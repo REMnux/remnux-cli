@@ -480,13 +480,13 @@ const performUpdate = (version) => {
       cli['--mode'] = savedMode
 	    console.log(`> using previous mode: ${cli['--mode']}`)
     }  else {
-      console.log(`>>> No previous valid mode found. Corrupt ${versionFile}?`)
-      return process.exit(0)
+      console.log(`> no previous REMnux version found; performing a new 'dedicated' installation.`)
+      cli['--mode'] = "dedicated"
     }
   }
 
   return new Promise((resolve, reject) => {
-    console.log(`> upgrading to ${version}`)
+    console.log(`> upgrading/updating to ${version}`)
 
     console.log(`>> Log file: ${logFilepath}`)
 

@@ -43,7 +43,7 @@ Usage:
 Options:
   --dev                 Developer Mode (do not use, dangerous, bypasses checks)
   --version=<version>   Specific version install [default: latest]
-  --mode=<mode>         REMnux installation mode (dedicated or addon)
+  --mode=<mode>         REMnux installation mode (dedicated, addon, or cloud)
   --user=<user>         User used for REMnux configuration [default: ${currentUser}]
   --no-cache            Ignore the cache, always download the release files
   --verbose             Display verbose logging
@@ -107,14 +107,17 @@ fSjkH+LA6A==
 
 const help = `
 
+Try rebooting your system and trying the operation again.
+
+Sometimes problems occur due to network or server issues when
+downloading packages, in which case retrying your operation
+a bit later might lead to good results.
+
 To determine the nature of the issue, please review the
 saltstack.log file under /var/cache/remnux/cli in the
 subdirectory that matches the REMnux version you're installing.
 Pay particular attention to lines that start with [ERROR].
 
-Sometimes problems occur due to network or server issues when
-downloading packages, in which case retrying your operation
-a bit later might lead to good results.
 `
 
 let osVersion = null
@@ -124,7 +127,7 @@ let versionFile = '/etc/remnux-version'
 let configFile = '/etc/remnux-config'
 let remnuxConfiguration = {}
 
-const validModes = ['dedicated', 'addon']
+const validModes = ['dedicated', 'addon','cloud']
 let isModeSpecified = false
 
 const cli = docopt(doc)
@@ -229,15 +232,15 @@ const setupSalt = async () => {
     const saltVersionOk = await saltCheckVersion(aptSourceList, aptDebString)
 
     if (aptExists === true && saltVersionOk === false) {
-      console.log('NOTICE: Fixing incorrect Saltstack version configuration.')
-      console.log('Installing and configuring Saltstack properly ...')
+      console.log('NOTICE: Fixing incorrect SaltStack version configuration.')
+      console.log('Installing and configuring SaltStack...')
       await child_process.execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
       await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
       await child_process.execAsync(`wget -O - https://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -y --allow-change-held-packages salt-minion')
     } else if (aptExists === false || saltExists === false) {
-      console.log('Installing and configuring SaltStack properly ...')
+      console.log('Installing and configuring SaltStack...')
       await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
       await child_process.execAsync(`wget -O - https://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
       await child_process.execAsync('apt-get update')
@@ -471,7 +474,8 @@ const performUpdate = (version) => {
 
   const stateApplyMap = {
     'dedicated': 'remnux.dedicated',
-    'addon': 'remnux.addon'
+    'addon': 'remnux.addon',
+    'cloud': 'remnux.cloud'
   }
  
   if (!isModeSpecified) {

@@ -6,8 +6,8 @@ const child_process = bluebird.promisifyAll(require('child_process'))
 const crypto = require('crypto')
 const spawn = require('child_process').spawn
 const docopt = require('docopt').docopt
-const GitHubApi = require('github')
-const mkdirp = bluebird.promisify(require('mkdirp'))
+const { Octokit } = require('@octokit/rest')
+const mkdirp = require('mkdirp')
 const request = require('request')
 const openpgp = require('openpgp')
 const username = require('username')
@@ -125,6 +125,7 @@ let osCodename = null
 let cachePath = '/var/cache/remnux/cli'
 let versionFile = '/etc/remnux-version'
 let configFile = '/etc/remnux-config'
+let releaseFile = '/etc/os-release'
 let remnuxConfiguration = {}
 
 const validModes = ['dedicated', 'addon','cloud']
@@ -132,7 +133,7 @@ let isModeSpecified = false
 
 const cli = docopt(doc)
 
-const github = new GitHubApi({
+const github = new Octokit({
   version: '3.0.0',
   validateCache: true,
 })
@@ -157,7 +158,7 @@ const setup = async () => {
 
 const validOS = async () => {
   try {
-    const contents = fs.readFileSync('/etc/os-release', 'utf8')
+    const contents = fs.readFileSync(releaseFile, 'utf8')
 
     if (contents.indexOf('UBUNTU_CODENAME=bionic') !== -1) {
       osVersion = '18.04'
@@ -168,7 +169,7 @@ const validOS = async () => {
     throw new Error('Invalid OS or unable to determine Ubuntu version')
   } catch (err) {
     if (err && err.code === 'ENOENT') {
-      throw new Error('invalid OS, missing /etc/os-release')
+      throw new Error('invalid OS, missing ${releaseFile}')
     }
 
     throw err
@@ -225,7 +226,7 @@ const saltCheckVersion = (path, value) => {
 const setupSalt = async () => {
   if (cli['--dev'] === false) {
     const aptSourceList = '/etc/apt/sources.list.d/saltstack.list'
-    const aptDebString = `deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`
+    const aptDebString = `deb [arch=amd64] http://repo.saltstack.com/py3/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`
 
     const aptExists = await fileExists(aptSourceList)
     const saltExists = await fileExists('/usr/bin/salt-call')
@@ -235,16 +236,16 @@ const setupSalt = async () => {
       console.log('NOTICE: Fixing incorrect SaltStack version configuration.')
       console.log('Installing and configuring SaltStack...')
       await child_process.execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
-      await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
-      await child_process.execAsync(`wget -O - https://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
+      await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/py3/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
+      await child_process.execAsync(`wget -O - https://repo.saltstack.com/py3/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
       await child_process.execAsync('apt-get update')
-      await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-minion')
+      await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-minion')
     } else if (aptExists === false || saltExists === false) {
       console.log('Installing and configuring SaltStack...')
-      await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
-      await child_process.execAsync(`wget -O - https://repo.saltstack.com/apt/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
+      await fs.writeFileAsync(aptSourceList, `deb [arch=amd64] http://repo.saltstack.com/py3/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
+      await child_process.execAsync(`wget -O - https://repo.saltstack.com/py3/ubuntu/${osVersion}/amd64/${saltstackVersion}/SALTSTACK-GPG-KEY.pub | apt-key add -`)
       await child_process.execAsync('apt-get update')
-      await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-minion')
+      await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-minion')
     }
   } else {
     return new Promise((resolve, reject) => {
@@ -262,8 +263,8 @@ const getCurrentVersion = () => {
     .then(contents => contents.toString().replace(/\n/g, ''))
 }
 
-const getReleases = () => {
-  return github.repos.getReleases({
+const listReleases = () => {
+  return github.repos.listReleases({
     owner: 'REMnux',
     repo: 'salt-states'
   })
@@ -271,7 +272,7 @@ const getReleases = () => {
 
 const getValidReleases = async () => {
   const currentRelease = await getCurrentVersion()
-  let releases = await getReleases()
+  let releases = await listReleases()
   const realReleases = releases.data.filter(release => !Boolean(release.prerelease)).map(release => release.tag_name)
   const allReleases = releases.data.map(release => release.tag_name)
 

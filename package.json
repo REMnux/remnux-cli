@@ -1,6 +1,6 @@
 {
   "name": "remnux-cli",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Manage your REMnux installation",
   "main": "remnux-cli.js",
   "bin": {
@@ -16,20 +16,20 @@
   "author": "Erik Kristensen <erik@erikkristensen.com>. Revised for REMnux by Lenny Zeltser.",
   "license": "MIT",
   "dependencies": {
+    "@octokit/rest": "^18.0.3",
     "bluebird": "^3.7.2",
     "docopt": "0.6.2",
-    "github": "13.1.1",
-    "js-yaml": "3.13.1",
-    "mkdirp": "0.5.1",
-    "openpgp": "4.7.1",
-    "prompt-sync": "^4.2.0",
-    "request": "2.88.0",
-    "semver": "6.3.0",
+    "github": "14.0.0",
+    "js-yaml": "3.14.0",
+    "mkdirp": "1.0.4",
+    "openpgp": "4.10.7",
+    "request": "2.88.2",
+    "semver": "7.3.2",
     "split": "1.0.1",
     "username": "5.1.0"
   },
   "devDependencies": {
-    "pkg": "4.4.0"
+    "pkg": "4.4.9"
   },
   "pkg": {
     "scripts": [

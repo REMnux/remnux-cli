@@ -167,6 +167,12 @@ const validOS = async () => {
       return true
     }
 
+    if (contents.indexOf('UBUNTU_CODENAME=focal') !== -1) {
+      osVersion = '20.04'
+      osCodename = 'focal'
+      return true
+    }
+
     throw new Error('Invalid OS or unable to determine Ubuntu version')
   } catch (err) {
     if (err && err.code === 'ENOENT') {

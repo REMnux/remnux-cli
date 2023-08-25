@@ -246,7 +246,7 @@ const setupSalt = async () => {
       await child_process.execAsync('apt-get remove -y --allow-change-held-packages salt-common salt-minion')
       await child_process.execAsync('mkdir -p /usr/share/keyrings')
       await child_process.execAsync(`curl -fsSL -o /usr/share/keyrings/salt-archive-keyring-2023.gpg https://repo.saltproject.io/salt/py3/ubuntu/20.04/amd64/SALT-PROJECT-GPG-PUBKEY-2023.gpg`)
-      await fs.writeFileAsync(aptSourceList, `deb [signed-by=/usr/share/keyrings/salt-archive-keyring-2023.gpg arch=amd64] ${baseUrl}/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
+      await fs.writeFileAsync(aptSourceList, `deb [signed-by=/usr/share/keyrings/salt-archive-keyring-2023.gpg [arch=amd64] ${baseUrl}/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
         env: {

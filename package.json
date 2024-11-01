@@ -22,9 +22,9 @@
     "github": "14.0.0",
     "js-yaml": "3.14.0",
     "mkdirp": "1.0.4",
-    "openpgp": "4.10.7",
+    "openpgp": "^4.10.11",
     "request": "2.88.2",
-    "semver": "7.3.2",
+    "semver": "^7.6.3",
     "split": "1.0.1",
     "username": "5.1.0"
   },

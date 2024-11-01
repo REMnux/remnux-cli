@@ -223,7 +223,7 @@ const setupSalt = async () => {
   if (cli['--dev'] === false) {
     const baseUrl = 'https://packages.broadcom.com'
     const aptSourceList = '/etc/apt/sources.list.d/saltstack.list'
-    const aptDebString = `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ ${osCodename} main`
+    const aptDebString = `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ stable main`
 
     const aptExists = await fileExists(aptSourceList)
     const saltExists = await fileExists('/usr/bin/salt-call')
@@ -234,8 +234,8 @@ const setupSalt = async () => {
       console.log('Installing and configuring Saltstack properly ...')
       await child_process.execAsync('apt-get remove -y --allow-change-held-packages salt-common salt-minion')
       await child_process.execAsync('mkdir -p /usr/share/keyrings')
-      await child_process.execAsync(`curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.pgp https://repo.saltproject.io/salt/py3/ubuntu/20.04/amd64/SALT-PROJECT-GPG-PUBKEY-2023.gpg`)
-      await fs.writeFileAsync(aptSourceList, `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ ${osCodename} main`)
+      await child_process.execAsync(`curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await fs.writeFileAsync(aptSourceList, `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ stable main`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
         env: {
@@ -246,8 +246,8 @@ const setupSalt = async () => {
     } else if (aptExists === false || saltExists === false) {
       console.log('Installing and configuring SaltStack properly ...')
       await child_process.execAsync('mkdir -p /usr/share/keyrings')
-      await child_process.execAsync(`curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.pgp https://repo.saltproject.io/salt/py3/ubuntu/20.04/amd64/SALT-PROJECT-GPG-PUBKEY-2023.gpg`)
-      await fs.writeFileAsync(aptSourceList, `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ ${osCodename} main`)
+      await child_process.execAsync(`curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await fs.writeFileAsync(aptSourceList, `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ stable main`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
         env: {

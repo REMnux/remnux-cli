@@ -1,40 +1,49 @@
 {
   "name": "remnux-cli",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "Manage your REMnux installation",
   "main": "remnux-cli.js",
   "bin": {
     "remnux-cli": "remnux-cli.js"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
-    "pkg:prep": "jo version=$(bash .ci/version) > config.json",
-    "pkg:build": "pkg -t node12-linux --out-dir release package.json && cd release && mv remnux-cli remnux-cli-linux",
+    "pkg:prep": "jo version=$(bash .ci/version) logPath='/var/cache/remnux/cli' > config.json",
+    "pkg:build": "pkg -t node22-linux --out-dir release package.json && cd release && mv remnux-cli remnux-cli-linux",
     "pkg:hash": "cd release && shasum -a 256 remnux-cli-linux > remnux-cli-linux.sha256",
     "pkg:sign": "cd release && rm -f remnux-cli-linux.sha256.asc && gpg --armor --clearsign --digest-algo SHA256 -u 28CD19DB remnux-cli-linux.sha256 && rm remnux-cli-linux.sha256",
-    "pkg": "npm run pkg:prep && npm run pkg:build && npm run pkg:hash && npm run pkg:sign"
+    "pkg:nosign": "npm run pkg:prep && npm run pkg:build && npm run pkg:hash",
+    "pkg": "npm run pkg:nosign && npm run pkg:sign"
   },
   "author": "Erik Kristensen <erik@erikkristensen.com>. Revised for REMnux by Lenny Zeltser.",
   "license": "MIT",
   "dependencies": {
-    "@octokit/rest": "^18.0.3",
-    "bluebird": "^3.7.2",
+    "@octokit/rest": "^18.12.0",
     "docopt": "0.6.2",
-    "github": "14.0.0",
-    "js-yaml": "3.14.0",
-    "mkdirp": "1.0.4",
-    "openpgp": "^4.10.11",
-    "request": "2.88.2",
-    "semver": "^7.6.3",
+    "js-yaml": "4.1.0",
+    "mkdirp": "3.0.1",
+    "openpgp": "6.1.1",
+    "proxy-agent": "6.5.0",
     "split": "1.0.1",
     "username": "5.1.0"
   },
   "devDependencies": {
-    "pkg": "4.4.9"
+    "@eslint/js": "^9.30.1",
+    "@yao-pkg/pkg": "6.5.1",
+    "eslint": "^9.30.1",
+    "globals": "^16.3.0"
   },
   "pkg": {
     "scripts": [
       "node_modules/github/lib/routes.json"
     ]
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/REMnux/remnux-cli.git"
+  },
+
   "false": {}
 }

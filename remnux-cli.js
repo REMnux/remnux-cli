@@ -277,7 +277,7 @@ const getValidReleases = async () => {
   const realReleases = releases.data.filter(release => !release.prerelease).map(release => release.tag_name)
   const allReleases = releases.data.map(release => release.tag_name)
 
-  if (currentRelease === 'notinstalled') {
+  if (currentRelease === 'not installed') {
     if (cli['--pre-release'] === true) {
       return allReleases
     }
@@ -703,14 +703,24 @@ ${yaml.dump(config)}
     return process.exit(1)
   }
 
-  await setupSalt()
-  if (cli['results'] === true && cli['--version'] !== null) {
+  if (cli['results'] === true && cli['--version'] !== null && cli['--version'] !== 'latest') {
     await summarizeResults(cli['--version'])
+    return process.exit(0)
   }
+  else if (cli['results'] === true && cli['--version'] === 'latest') {
+    const currentVersion = await getCurrentVersion()
+    if (currentVersion !== 'not installed') {
+        await summarizeResults(currentVersion)
+        return process.exit(0)
+    } else {
+      console.log('REMnux is not installed.')
+      return process.exit(0)
+    }
+  }
+  await setupSalt()
   if (cli['install'] === true) {
-    const currentVersion = await getCurrentVersion(versionFile)
-
-    if (currentVersion !== 'notinstalled') {
+    const currentVersion = await getCurrentVersion()
+    if (currentVersion !== 'not installed') {
       console.log('REMnux is already installed, please use the "upgrade" command.')
       return process.exit(0)
     }

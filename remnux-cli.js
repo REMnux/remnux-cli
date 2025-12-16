@@ -222,20 +222,36 @@ const saltCheckVersion = async (path, value) => {
 const setupSalt = async () => {
   if (cli['--dev'] === false) {
     const baseUrl = 'https://packages.broadcom.com'
-    const aptSourceList = '/etc/apt/sources.list.d/saltstack.list'
-    const aptDebString = `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ stable main`
+    
+    // Support both remnux-cli and Cast apt source file locations
+    const aptSourceListLegacy = '/etc/apt/sources.list.d/saltstack.list'
+    const aptSourceListCast = '/etc/apt/sources.list.d/salt.list'
+    
+    // Accept either key path as valid (remnux-cli uses /usr/share/keyrings, Cast uses /etc/apt/keyrings)
+    const keyPathLegacy = '/usr/share/keyrings/salt-archive-keyring.pgp'
+    const keyPathCast = '/etc/apt/keyrings/salt-archive-keyring-2023.pgp'
+    
+    const aptDebStringLegacy = `deb [signed-by=${keyPathLegacy} arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ stable main`
+    const aptDebStringCast = `deb [signed-by=${keyPathCast} arch=amd64] ${baseUrl}/artifactory/saltproject-deb/ stable main`
 
-    const aptExists = await fileExists(aptSourceList)
+    const aptExistsLegacy = await fileExists(aptSourceListLegacy)
+    const aptExistsCast = await fileExists(aptSourceListCast)
+    const aptExists = aptExistsLegacy || aptExistsCast
+    
     const saltExists = await fileExists('/usr/bin/salt-call')
-    const saltVersionOk = await saltCheckVersion(aptSourceList, aptDebString)
+    
+    // Check if either configuration is valid
+    const saltVersionOkLegacy = await saltCheckVersion(aptSourceListLegacy, aptDebStringLegacy)
+    const saltVersionOkCast = await saltCheckVersion(aptSourceListCast, aptDebStringCast)
+    const saltVersionOk = saltVersionOkLegacy || saltVersionOkCast
 
     if (aptExists === true && saltVersionOk === false) {
       console.log('NOTICE: Fixing incorrect Saltstack version configuration.')
       console.log('Installing and configuring Saltstack properly ...')
       await execAsync('apt-get remove -y --allow-change-held-packages salt-common salt-minion')
       await execAsync('mkdir -p /usr/share/keyrings')
-      await execAsync(`curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.pgp ${baseUrl}/artifactory/api/security/keypair/SaltProjectKey/public`)
-      await fs.writeFile(aptSourceList, aptDebString)
+      await execAsync(`curl -fsSL -o ${keyPathLegacy} ${baseUrl}/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await fs.writeFile(aptSourceListLegacy, aptDebStringLegacy)
       await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
       await execAsync('apt-get update')
       await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
@@ -246,9 +262,9 @@ const setupSalt = async () => {
       })
     } else if (aptExists === false || saltExists === false) {
       console.log('Installing and configuring SaltStack...')
-      await fs.writeFile(aptSourceList, aptDebString)
+      await fs.writeFile(aptSourceListLegacy, aptDebStringLegacy)
       await execAsync('mkdir -p /usr/share/keyrings')
-      await execAsync(`curl -fsSL -o /usr/share/keyrings/salt-archive-keyring.pgp ${baseUrl}/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await execAsync(`curl -fsSL -o ${keyPathLegacy} ${baseUrl}/artifactory/api/security/keypair/SaltProjectKey/public`)
       await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
       await execAsync('apt-get update')
       await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {

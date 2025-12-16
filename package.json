@@ -11,7 +11,7 @@
   },
   "scripts": {
     "pkg:prep": "jo version=$(bash .ci/version) logPath='/var/cache/remnux/cli' > config.json",
-    "pkg:build": "pkg -t node22-linux --out-dir release package.json && cd release && mv remnux-cli remnux-cli-linux",
+    "pkg:build": "npx @yao-pkg/pkg -t node22-linux --out-dir release package.json && cd release && mv remnux-cli remnux-cli-linux",
     "pkg:hash": "cd release && shasum -a 256 remnux-cli-linux > remnux-cli-linux.sha256",
     "pkg:sign": "cd release && rm -f remnux-cli-linux.sha256.asc && gpg --armor --clearsign --digest-algo SHA256 -u 28CD19DB remnux-cli-linux.sha256 && rm remnux-cli-linux.sha256",
     "pkg:nosign": "npm run pkg:prep && npm run pkg:build && npm run pkg:hash",
@@ -23,11 +23,9 @@
     "@octokit/rest": "^18.12.0",
     "docopt": "0.6.2",
     "js-yaml": "4.1.0",
-    "mkdirp": "3.0.1",
-    "openpgp": "6.1.1",
-    "proxy-agent": "6.5.0",
+    "openpgp": "5.11.2",
     "split": "1.0.1",
-    "username": "5.1.0"
+    "username": "4.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
@@ -35,15 +33,8 @@
     "eslint": "^9.30.1",
     "globals": "^16.3.0"
   },
-  "pkg": {
-    "scripts": [
-      "node_modules/github/lib/routes.json"
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/REMnux/remnux-cli.git"
-  },
-
-  "false": {}
+  }
 }

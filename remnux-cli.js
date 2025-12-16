@@ -8,7 +8,6 @@ const crypto = require('crypto')
 const spawn = require('child_process').spawn
 const docopt = require('docopt').docopt
 const { Octokit } = require('@octokit/rest')
-const { mkdirp } = require('mkdirp')
 const openpgp = require('openpgp')
 const username = require('username')
 const readline = require('readline')
@@ -44,48 +43,60 @@ let remnuxVersion = null
 const pubKey = `
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
-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
-=ZKPF
+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
+fSjkH+LA6A==
+=16sr
 -----END PGP PUBLIC KEY BLOCK-----
 `
 
 const getHelpText = () => {
+let logFilePath
+let subDir
 if (remnuxVersion != null) {
     logFilePath = `${cfg.logPath}/${remnuxVersion}`
     subDir = '.'
@@ -150,13 +161,13 @@ const setup = async () => {
     releaseFile = '/tmp/os-release'
   }
 
-  await mkdirp(cachePath)
+  await fs.mkdir(cachePath, { recursive: true })
 }
 
 const validOS = async () => {
   try {
     const contents = await fs.readFile(releaseFile, 'utf8')
-    const match = contents.match(/UBUNTU_CODENAME=(\w+)/);
+    const match = contents.match(/UBUNTU_CODENAME=["']?(\w+)["']?/);
     if (!match) {
       throw new Error('Invalid OS or unable to determine Ubuntu version')
     }
@@ -340,10 +351,13 @@ const downloadReleaseFile = async (version, filename) => {
         output.end()
       } catch (err) {
         output.destroy()
+        await fs.unlink(filepath).catch(() => {})
         reject(err)
       }
     }
     output.on('error', (err) => {
+      output.destroy()
+      fs.unlink(filepath, () => {})
       reject(err)
     })
     output.on('finish', () => {
@@ -377,11 +391,16 @@ const downloadRelease = async (version) => {
         resolve()
       } catch (err) {
         output.destroy()
+        await fs.unlink(filepath).catch(() => {})
         reject(err)
       }
     }
 
-    output.on('error', reject)
+    output.on('error', (err) => {
+      output.destroy()
+      fs.unlink(filepath, () => {})
+      reject(err)
+    })
     pump()
   })
 }
@@ -462,7 +481,7 @@ const extractUpgrade = (version, filename) => {
 
 const downloadUpgrade = async (version) => {
   console.log(`> upgrade-version: ${version}`)
-  await mkdirp(`${cachePath}/${version}`)
+  await fs.mkdir(`${cachePath}/${version}`, { recursive: true })
   await downloadReleaseFile(version, `remnux-salt-states-${version}.tar.gz.asc`)
   await downloadReleaseFile(version, `remnux-salt-states-${version}.tar.gz.sha256`)
   await downloadReleaseFile(version, `remnux-salt-states-${version}.tar.gz.sha256.asc`)
@@ -476,7 +495,7 @@ const performUpgrade = (version) => {
   const filepath = `${cachePath}/${version}/salt-states-${version.replace('v', '')}`
   const outputFilepath = `${cachePath}/${version}/results.yml`
   const logFilepath = `${cachePath}/${version}/saltstack.log`
-  cfg.logPath = logFilePath
+  cfg.logPath = logFilepath
   const begRegex = /Running state \[(.*)\] at time (.*)/g
   const endRegex = /Completed state \[(.*)\] at time (.*) duration_in_ms=(.*)/g
 

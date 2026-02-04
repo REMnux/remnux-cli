@@ -164,6 +164,34 @@ const setup = async () => {
   await fs.mkdir(cachePath, { recursive: true })
 }
 
+const showDeprecationAndExit = async () => {
+  console.log('')
+  console.log('============================================================')
+  console.log('  This version of the REMnux installer has been retired.')
+  console.log('  Please use the new version, which you can get from REMnux.org.')
+  console.log('============================================================')
+  console.log('')
+
+  // Try to detect if running on Ubuntu Focal
+  try {
+    const contents = await fs.readFile('/etc/os-release', 'utf8')
+    const match = contents.match(/UBUNTU_CODENAME=["']?(\w+)["']?/)
+    if (match && match[1] === 'focal') {
+      console.log('  NOTE: You are running an older version of Ubuntu (Focal),')
+      console.log('  which is no longer supported. Please get a new REMnux virtual')
+      console.log('  machine or container, or set up your own system based on')
+      console.log('  Ubuntu 24.04 (Noble).')
+      console.log('')
+    }
+  } catch (err) {
+    // Silently ignore OS detection errors
+  }
+
+  console.log('  Please see: https://docs.remnux.org')
+  console.log('')
+  process.exit(0)
+}
+
 const validOS = async () => {
   try {
     const contents = await fs.readFile(releaseFile, 'utf8')
@@ -670,6 +698,10 @@ const loadConfiguration = async () => {
 }
 
 const run = async () => {
+  // Show deprecation message and exit immediately
+  await showDeprecationAndExit()
+
+  // All code below is now unreachable but kept for reference
   if (cli['-v'] === true) {
     console.log(`Version: ${cfg.version}`)
     return process.exit(0)
